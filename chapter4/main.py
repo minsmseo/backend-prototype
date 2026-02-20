@@ -41,3 +41,56 @@ def read_player(player_id: int, db:Session = Depends(get_db)):
     if player is None:
         raise HTTPException(status_code = 404, detail="선수를 찾을 수 없습니다.")
     return player
+
+@app.get("/v0/performances/",response_model = list[schemas.Performance])
+def read_performances(skip: int =0,
+                      limit : int =100,
+                      minimum_last_changed_date: date = None,
+                      db: Session = Depends(get_db)):
+    performaces = crud.get_performances(db,
+                                        skip=skip,
+                                        limit=limit,
+                                        min_last_changed_date=minimum_last_changed_date)
+    return performaces
+
+@app.get("/v0/leagues/{league_id}",response_model=schemas.League)
+def read_league(league_id : int, db:Session = Depends(get_db)):
+    league = crud.get_league(db,league_id==league_id)
+    if league is None:
+        raise HTTPException(status_code = 404, detail="리그를 찾을 수 없습니다")
+    return league
+
+@app.get("/v0/leagues/",response_model=list[schemas.League])
+def read_leagues(skip: int =0,
+                 limit: int =100,
+                 minimum_last_changed_date: date = None,
+                 league_name:str = None,
+                 db: Session = Depends(get_db)):
+    leagues = crud.get_league(db,
+                              skip=skip,
+                              limit=limit,
+                              minimum_last_changed_date= minimum_last_changed_date,
+                              league_name = league_name)
+    return leagues
+
+@app.get("/v0/teams/", response_model=list[schemas.Team])
+def read_teams(skip: int =0,
+               limit: int =100,
+               minimum_last_changed_date: date = None,
+               team_name: str = None,
+               league_id : int =None,
+               db: Session = Depends(get_db)):
+    teams = crud.get_teams(db,
+                           skip=skip,
+                           limit = limit,
+                           min_last_changed_date=minimum_last_changed_date,
+                           team_name=team_name,
+                           league_id = league_id)
+    return teams
+
+@app.get("/v0/counts/",response_model = schemas.Counts)
+def get_count(db: Session = Depends(get_db)):
+    counts = schemas.Counts(League_count=crud.get_league_count(db),
+                            team_count =crud.get_team_count(db),
+                            player_count = crud.get_player_count(db))
+    return counts
