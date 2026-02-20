@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from datetime import date
 
 import crud, schemas
-from datebase import SessionLocal
+from database import SessionLocal
 
 app = FastAPI()
 
